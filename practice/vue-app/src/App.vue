@@ -34,14 +34,14 @@ const resetInput = () => {
         <div class="grid grid-cols-2 gap-x-2">
           <BaseButton
             id="button"
-            validate
+            btnClass="rounded-md text-lg bg-blue-200 hover:bg-blue-800 hover:text-white p-4 mt-4"
             @click="validateResult"
           >
             Validate It!
           </BaseButton>
           <BaseButton
             id="button2"
-            reset
+            btnClass="rounded-md text-lg bg-red-200 hover:bg-red-800 hover:text-white p-4 mt-4"
             @click="resetInput"
           >
             Clear!
