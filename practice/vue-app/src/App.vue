@@ -1,30 +1,74 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+<script
+  setup
+  lang="ts"
+>
+import UsersList from './components/UsersList.vue';
+import ConnectionIssues from './components/ConnectionIssues.vue';
+import SpinningLoader from './components/SpinningLoader.vue';
+
+import { ref, onMounted } from 'vue';
+
+import { User } from './interfaces/users';
+
+const users = ref<User[]>([]);
+const isLoading = ref(false);
+const isTimeoutError = ref(false);
+
+const API_URL = 'http://localhost:3000/api/data/users?timeout=10000';
+const TIMEOUT = 5000;
+
+const fetchUsers = async () => {
+  try {
+    const controller = new AbortController()
+
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      isTimeoutError.value = true;
+      isLoading.value = false;
+    }, TIMEOUT);
+
+    isTimeoutError.value = false;
+    isLoading.value = true;
+
+    const res = await fetch(API_URL, { signal: controller.signal });
+
+    const { users } = await res.json();
+
+    return users;
+  } catch (err) {
+    console.error('error fetching users', err);;
+    return []
+  } finally {
+    controller = null
+    clearTimeout(timeoutId);
+    isLoading.value = false;
+  }
+};
+
+const handleRetryFetch = () => {
+  users.value = fetchUsers();
+};
+
+onMounted(() => {
+  users.value = fetchUsers()
+});
+
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="flex flex-row items-center justify-between py-4">
+    <h1 class="text-2xl font-bold">Users</h1>
+    <div>
+      <SpinningLoader v-show="isLoading" />
+    </div>
+    <div>
+      <ConnectionIssues
+        v-show="isTimeoutError"
+        @retry="handleRetryFetch"
+      />
+    </div>
   </div>
-  <HelloWorld msg="Vite + Vue" />
+  <UsersList :users="users" />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
+<style scoped></style>
