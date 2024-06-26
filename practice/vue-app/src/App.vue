@@ -7,40 +7,30 @@ import ConnectionIssues from './components/ConnectionIssues.vue';
 import SpinningLoader from './components/SpinningLoader.vue';
 
 import { ref, onMounted } from 'vue';
-
+import { fetchWithTimeout } from './utils/clientHTTP';
 import { User } from './interfaces/users';
-
-const users = ref<User[]>([]);
-const isLoading = ref(false);
-const isTimeoutError = ref(false);
 
 const API_URL = 'http://localhost:3000/api/data/users?timeout=10000';
 const TIMEOUT = 5000;
+const isLoading = ref(false);
+const isTimeoutError = ref(false);
+const users = ref<User[]>([]);
 
 const fetchUsers = async () => {
   try {
-    const controller = new AbortController()
-
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-      isTimeoutError.value = true;
-      isLoading.value = false;
-    }, TIMEOUT);
-
     isTimeoutError.value = false;
     isLoading.value = true;
 
-    const res = await fetch(API_URL, { signal: controller.signal });
+    const res = await fetchWithTimeout(API_URL, TIMEOUT);
 
     const { users } = await res.json();
 
     return users;
   } catch (err) {
-    console.error('error fetching users', err);;
-    return []
+    console.error('Error:', err);
+    users.value = [];
+    isTimeoutError.value = true;
   } finally {
-    controller = null
-    clearTimeout(timeoutId);
     isLoading.value = false;
   }
 };
@@ -72,3 +62,4 @@ onMounted(() => {
 </template>
 
 <style scoped></style>
+./utils/clientHTTP
