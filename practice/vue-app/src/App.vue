@@ -7,7 +7,6 @@ import ConnectionIssues from './components/ConnectionIssues.vue';
 import SpinningLoader from './components/SpinningLoader.vue';
 
 import { ref, onMounted } from 'vue';
-import { fetchWithTimeout } from './utils/clientHTTP';
 import { User } from './interfaces/users';
 
 const API_URL = 'http://localhost:3000/api/data/users?timeout=10000';
@@ -18,17 +17,15 @@ const users = ref<User[]>([]);
 
 const fetchUsers = async () => {
   try {
-    isTimeoutError.value = false;
     isLoading.value = true;
 
-    const res = await fetchWithTimeout(API_URL, TIMEOUT);
+    const res = await fetch(API_URL, { signal: AbortSignal.timeout(TIMEOUT) });
 
     const { users } = await res.json();
 
     return users;
   } catch (err) {
     console.error('Error:', err);
-    users.value = [];
     isTimeoutError.value = true;
   } finally {
     isLoading.value = false;
@@ -36,6 +33,7 @@ const fetchUsers = async () => {
 };
 
 const handleRetryFetch = () => {
+  isTimeoutError.value = false;
   users.value = fetchUsers();
 };
 
