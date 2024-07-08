@@ -3,14 +3,14 @@ import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config();
 
-const BASE_URL = 'https://en.wikipedia.org';
-const PROJECT_DIR = './module2/lesson2/base';
+const BASE_URL = 'http://localhost:4200';
+const PROJECT_DIR = './module1/lesson2/_solutions/signals-angular';
 const SETUP_PATH_REGEX = '**/*.setup.ts';
 const LOGGED_IN_PATH_REGEX = '**/logged-in/*.spec.ts';
 
 export const STORAGE_STATE = path.join(
   __dirname,
-  `${PROJECT_DIR}/playwright/.auth/user.json`
+  `${PROJECT_DIR}/testa`
 );
 
 const isRunningExtended = PROJECT_DIR.includes('extended');
